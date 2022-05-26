@@ -70,12 +70,12 @@ func homePage(w http.ResponseWriter, r *http.Request){
 func handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
     myRouter.HandleFunc("/", homePage)
-    myRouter.HandleFunc("/pets", returnAllPets)
+    myRouter.HandleFunc("/pets", returnAllPets).Methods(("GET"))
     // NOTE: Ordering is important here! This has to be defined before
     // the other `/article` endpoint. 
     myRouter.HandleFunc("/pet", createNewPet).Methods("POST")
     myRouter.HandleFunc("/pet/{id}", deletePet).Methods("DELETE")
-    myRouter.HandleFunc("/pet/{id}", returnSinglePet)
+    myRouter.HandleFunc("/pet/{id}", returnSinglePet).Methods("GET")
     log.Fatal(http.ListenAndServe(":10000", myRouter))
 }
 
@@ -83,7 +83,8 @@ func main() {
 	Pets = []Pet{
         Pet{Id: "1", Name: "Lilly", Species: "Dog", DateOfBirth: "2011-01-01"},
         Pet{Id: "2", Name: "Petal", Species: "Pangolin", DateOfBirth: "2010-12-25"},
-              
+        Pet{Id: "3", Name: "Poppy", Species: "Capybara", DateOfBirth: "2010-12-24"},
+
     }
     handleRequests()
 }
