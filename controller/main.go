@@ -10,40 +10,40 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func returnAllArticles(w http.ResponseWriter, r *http.Request){
+func returnAllPets(w http.ResponseWriter, r *http.Request){
     fmt.Println("Endpoint Hit: returnAllArticles")
-    json.NewEncoder(w).Encode(Articles)
+    json.NewEncoder(w).Encode(Pets)
 }
 
-func returnSingleArticle(w http.ResponseWriter, r *http.Request){
+func returnSinglePet(w http.ResponseWriter, r *http.Request){
     vars := mux.Vars(r)
     key := vars["id"]
 
      // Loop over all of our Articles
     // if the article.Id equals the key we pass in
     // return the article encoded as JSON
-    for _, article := range Articles {
+    for _, article := range Pets {
         if article.Id == key {
             json.NewEncoder(w).Encode(article)
         }
     }
 }
 
-func createNewArticle(w http.ResponseWriter, r *http.Request) {
+func createNewPet(w http.ResponseWriter, r *http.Request) {
     // get the body of our POST request
     // unmarshal this into a new Article struct
     // append this to our Articles array.    
     reqBody, _ := ioutil.ReadAll(r.Body)
-    var article Article 
+    var article Pet 
     json.Unmarshal(reqBody, &article)
     // update our global Articles array to include
     // our new Article
-    Articles = append(Articles, article)
+    Pets = append(Pets, article)
 
     json.NewEncoder(w).Encode(article)
 }
 
-func deleteArticle(w http.ResponseWriter, r *http.Request) {
+func deletePet(w http.ResponseWriter, r *http.Request) {
     // once again, we will need to parse the path parameters
     vars := mux.Vars(r)
     // we will need to extract the `id` of the article we
@@ -51,50 +51,51 @@ func deleteArticle(w http.ResponseWriter, r *http.Request) {
     id := vars["id"]
 
     // we then need to loop through all our articles
-    for index, article := range Articles {
+    for index, article := range Pets {
         // if our id path parameter matches one of our
         // articles
         if article.Id == id {
             // updates our Articles array to remove the 
             // article
-            Articles = append(Articles[:index], Articles[index+1:]...)
+            Pets = append(Pets[:index], Pets[index+1:]...)
         }
     }
 
 }
 func homePage(w http.ResponseWriter, r *http.Request){
-    fmt.Fprintf(w, "Welcome to the HomePage! pages inclide /articles")
+    fmt.Fprintf(w, "Welcome to the Pet Shop! pages include pets,pet, GET/DELETE pet/id")
     fmt.Println("Endpoint Hit: homePage")
 }
 
 func handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
     myRouter.HandleFunc("/", homePage)
-    myRouter.HandleFunc("/articles", returnAllArticles)
+    myRouter.HandleFunc("/pets", returnAllPets)
     // NOTE: Ordering is important here! This has to be defined before
     // the other `/article` endpoint. 
-    myRouter.HandleFunc("/article", createNewArticle).Methods("POST")
-    myRouter.HandleFunc("/article/{id}", deleteArticle).Methods("DELETE")
-    myRouter.HandleFunc("/article/{id}", returnSingleArticle)
+    myRouter.HandleFunc("/pet", createNewPet).Methods("POST")
+    myRouter.HandleFunc("/pet/{id}", deletePet).Methods("DELETE")
+    myRouter.HandleFunc("/pet/{id}", returnSinglePet)
     log.Fatal(http.ListenAndServe(":10000", myRouter))
 }
 
 func main() {
-	Articles = []Article{
-        Article{Id: "1", Title: "Hello", Desc: "Article Description", Content: "Article Content"},
-        Article{Id: "2", Title: "Hello 2", Desc: "Article Description", Content: "Article Content"},
+	Pets = []Pet{
+        Pet{Id: "1", Name: "Lilly", Species: "Dog", DateOfBirth: "2011-01-01"},
+        Pet{Id: "2", Name: "Petal", Species: "Pangolin", DateOfBirth: "2010-12-25"},
+              
     }
     handleRequests()
 }
 
-type Article struct {
+type Pet struct {
 	Id      string `json:"Id"`
-    Title   string `json:"Title"`
-    Desc    string `json:"desc"`
-    Content string `json:"content"`
+    Name   string `json:"Name"`
+    Species    string `json:"Species"`
+    DateOfBirth string `json:"DOB"`
 }
 
 // let's declare a global Articles array
 // that we can then populate in our main function
 // to simulate a database
-var Articles []Article
+var Pets []Pet
